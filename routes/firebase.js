@@ -14,40 +14,57 @@ router.use('/',function (req, res, next) {
     next()
   })
 
-router.get('/', function (req, res, next) {
+var config = {
+      databaseURL: "https://hihi-65b69.firebaseio.com" // enter your databaseURL（輸入由firebase中申請到的firebase的databaseURL）
+  };
 
-    var config = {
-        databaseURL: "" // enter your databaseURL（輸入由firebase中申請到的firebase的databaseURL）
-    };
+firebase.initializeApp(config);
 
-    firebase.initializeApp(config);
+  // Get a reference to the database service
+var database = firebase.database();
+//自動生成 id
+const uuid = require('uuid4');
+var id = uuid();
 
-    // Get a reference to the database service
-    var database = firebase.database();
 
-     // set -> 建立新的資料
-    firebase.database().ref('users/' + '123').set({
-        username: 'wwwww',
-        email: 'test@gmail.com'
-    });
-
-    // update -> 更新指定資料
-    firebase.database().ref('users/' + '223').update({
-        username: 'wwwww',
-        email: 'tes2t@gmail.com'
-    });
-
+router.get('/getdata', function (req, res, next) {
     // once -> 取得資料
     firebase.database().ref('users/').once('value', function (snapshot) {
-        console.log(snapshot.val());
-        res.json({
-          
+      console.log(snapshot.val());
+      res.json({
+          result: '成功取得資料'
         })
     });
+})
+router.post('/postdata', function (req, res, next) {
+    // set -> 建立新的資料
+    // 將 id 置於 req.query.id
+    firebase.database().ref('users/' + req.query.id).set({
+        username: req.body.username,
+        email: req.body.email
+      });
+      res.json({
+          result: '成功建立資料'
+        })
+  });
 
+router.put('/putdata', function (req, res, next) {
+    // update -> 更新指定資料
+    firebase.database().ref('users/' + req.query.id).update({
+        username: req.body.username,
+        email: req.body.email
+    });
+    res.json({
+        result: '成功更新資料'
+        })
+  });
+
+router.delete('/deletedata', function (req, res, next) {
     // remove -> 刪除指定資料
-    firebase.database().ref('users/' + '123').remove()
-
-});
+    firebase.database().ref('users/' + req.query.id).remove()
+    res.json({
+        result: '成功刪除資料'
+        })
+  });
 
 module.exports = router;

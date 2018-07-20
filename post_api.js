@@ -48,7 +48,7 @@ server.listen(3000);
 
 //querystring.parse()它是用來將URL中的query string轉成為key跟value的配對。
 
-//example: 
+//example:
 
 // query string: 'test1=hi&test2=all&test3=no&test3=no'
 
