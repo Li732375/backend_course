@@ -23,6 +23,7 @@ firebase.initializeApp(config);
   // Get a reference to the database service
 var database = firebase.database();
 //自動生成 id
+//參考資料：https://github.com/tracker1/node-uuid4
 const uuid = require('uuid4');
 var id = uuid();
 
