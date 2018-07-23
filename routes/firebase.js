@@ -133,6 +133,7 @@ router.post('/member', function (req, res, next) {
         account:req.body.account,
         password:req.body.password
     });
+    console.log(decoded)
     res.status(200).json({
         result: '會員註冊完成'
     })
@@ -141,7 +142,7 @@ router.post('/member', function (req, res, next) {
 //token生產
 var jwt = require('jsonwebtoken')
 
-router.post('/member', function (req, res, next) {
+router.post('/member/login', function (req, res, next) {
     const a = req.body.account
     const p = req.body.password
     // 試著判斷前端在request中是否有正常的輸入request的key。
@@ -154,7 +155,7 @@ router.post('/member', function (req, res, next) {
     }
     // 帳號確認
     firebase.database().ref('members/').orderByChild('account').
-      equalTo(account).on('value', function (snapshot) {
+      equalTo(a).on('value', function (snapshot) {
         if (snapshot.val() === null) {
             res.json({
                 result: '無該帳號'
@@ -163,7 +164,7 @@ router.post('/member', function (req, res, next) {
         }
         const token = jwt.sign({
             exp: Math.floor(Date.now() / 1000) + (60 * 60),
-            data: account
+            data: a
           }, 'secret');
 
         const decoded = jwt.verify(token, 'secret');
@@ -180,7 +181,11 @@ router.post('/order', function (req, res, next) {
     const quantity = req.body.quantity
     const token = req.query.token
     // 試著判斷前端在request中是否有正常的輸入request的key。
-    if (productName === undefined || quantity === undefined || token === undefined || productName === '' || quantity === '' || token === '') {
+
+    if (productName === undefined || quantity === undefined ||
+        token === undefined || productName === '' || quantity === '' ||
+        token === '') {
+        console.log(decoded)
         res.status(400).json({
             result: '請在request的body中輸入name及price的key值，並在query中輸入token值。'
         })
@@ -195,9 +200,45 @@ router.post('/order', function (req, res, next) {
         productName,
         quantity,
     });
+
     res.status(200).json({
         result: '產品新增成功'
     })
+})
+
+router.get('/order', function (req, res, next) {
+    const productName = req.body.productName
+    const quantity = req.body.quantity
+    const token = req.query.token
+    // 試著判斷前端在request中是否有正常的輸入request的key。
+
+    if (productName === undefined || quantity === undefined ||
+        token === undefined || productName === '' || quantity === '' ||
+        token === '') {
+        console.log(decoded)
+        res.status(400).json({
+            result: '請在request的body中輸入name及price的key值，並在query中輸入token值。'
+        })
+        // 若沒加該行return會造成一個重複給response中的錯誤
+        return
+    }
+    const decoded = jwt.verify(token, 'secret');
+    const account = decoded.data
+
+    const id = req.query.id
+    if (id === undefined || id === '') {
+        res.status(400).json({
+            result: '請在request的輸入id的query值。'
+        })
+        // 若沒加該行return會造成一個重複給response中的錯誤
+        return
+    }
+    firebase.database().ref('products/' + id).once('value', function (snapshot) {
+        // console.log(snapshot.val());
+        res.status(200).json({
+            result: snapshot.val()
+        })
+    });
 })
 
 module.exports = router;
